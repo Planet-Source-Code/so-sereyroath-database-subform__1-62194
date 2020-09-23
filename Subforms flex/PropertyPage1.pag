@@ -1,0 +1,252 @@
+VERSION 5.00
+Begin VB.PropertyPage Columns 
+   BackColor       =   &H00FFFFFF&
+   Caption         =   "Columns"
+   ClientHeight    =   3495
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   5925
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   3495
+   ScaleWidth      =   5925
+   Begin VB.CommandButton Command4 
+      Caption         =   "&Remove"
+      Height          =   375
+      Left            =   4080
+      TabIndex        =   7
+      Top             =   360
+      Width           =   1215
+   End
+   Begin VB.CommandButton Command3 
+      Caption         =   "&Insert"
+      Height          =   375
+      Left            =   2760
+      TabIndex        =   6
+      Top             =   360
+      Width           =   1215
+   End
+   Begin VB.CheckBox chkDuplication 
+      BackColor       =   &H00FFFFFF&
+      Caption         =   "Check Duplicate"
+      Height          =   375
+      Left            =   1320
+      TabIndex        =   5
+      Top             =   1440
+      Width           =   3735
+   End
+   Begin VB.ComboBox cmbCelltype 
+      Height          =   315
+      ItemData        =   "PropertyPage1.pgx":0000
+      Left            =   1320
+      List            =   "PropertyPage1.pgx":0010
+      Style           =   2  'Dropdown List
+      TabIndex        =   3
+      Top             =   960
+      Width           =   3975
+   End
+   Begin VB.CommandButton Command2 
+      Appearance      =   0  'Flat
+      Height          =   380
+      Left            =   2160
+      Picture         =   "PropertyPage1.pgx":0039
+      Style           =   1  'Graphical
+      TabIndex        =   1
+      Top             =   360
+      Width           =   240
+   End
+   Begin VB.CommandButton Command1 
+      Appearance      =   0  'Flat
+      Height          =   380
+      Left            =   2400
+      Picture         =   "PropertyPage1.pgx":35C9
+      Style           =   1  'Graphical
+      TabIndex        =   0
+      Top             =   360
+      Width           =   240
+   End
+   Begin VB.Image Image1 
+      Height          =   615
+      Left            =   3480
+      Picture         =   "PropertyPage1.pgx":6B53
+      Stretch         =   -1  'True
+      Top             =   2760
+      Width           =   2295
+   End
+   Begin VB.Label Label2 
+      BackColor       =   &H00FFFFFF&
+      Caption         =   "Index"
+      Height          =   255
+      Left            =   240
+      TabIndex        =   8
+      Top             =   480
+      Width           =   615
+   End
+   Begin VB.Label Label4 
+      BackColor       =   &H00FFFFFF&
+      Caption         =   "CellType:"
+      Height          =   375
+      Left            =   240
+      TabIndex        =   4
+      Top             =   1080
+      Width           =   1095
+   End
+   Begin VB.Label Lblcindex 
+      Alignment       =   2  'Center
+      BorderStyle     =   1  'Fixed Single
+      Caption         =   "0"
+      Height          =   375
+      Left            =   1320
+      TabIndex        =   2
+      Top             =   360
+      Width           =   855
+   End
+End
+Attribute VB_Name = "Columns"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = True
+Dim pformat As String
+Dim m As Long
+Dim s() As String
+Dim t() As String
+Dim ind As Long
+Private Type pro
+    cind As Long
+    typess As String
+    dp As Byte
+End Type
+Dim pros() As pro
+Private Sub txtFormat_Change()
+    Changed = True
+End Sub
+
+
+Private Sub chkDuplication_Click()
+    pros(Lblcindex).dp = chkDuplication.Value
+    Changed = True
+End Sub
+
+
+
+Private Sub cmbCelltype_Click()
+    pros(Lblcindex).typess = cmbCelltype
+    Changed = True
+End Sub
+
+Private Sub Command1_Click()
+On Error GoTo x
+    If m < ind Then
+        m = m + 1
+        's = Split(pformat, Chr(1))
+        'For i = 0 To s
+        If UBound(pros) > 0 Then
+            't = Split(pros(m), Chr(2))
+            Lblcindex = m
+            cmbCelltype.text = pros(Lblcindex).typess
+            chkDuplication = pros(Lblcindex).dp
+        End If
+    End If
+x:
+End Sub
+
+Private Sub Command2_Click()
+    On Error GoTo x
+    If m > 0 Then
+        m = m - 1
+         If UBound(pros) > 0 Then
+            't = Split(pros(m), Chr(2))
+            Lblcindex = m
+            cmbCelltype.text = pros(Lblcindex).typess
+            chkDuplication = pros(Lblcindex).dp
+        End If
+    End If
+x:
+End Sub
+
+Private Sub Command3_Click()
+    ind = ind + 1
+    ReDim Preserve pros(ind)
+    If cmbCelltype.text <> "" Then cmbCelltype.text = "TextBox"
+    'pformat = IIf(pformat <> "", pformat & Chr(1), "") & Lblcindex & Chr(1) & cmbCelltype & Chr(1) & chkDuplication.Value
+    'lblcind = ind
+    Lblcindex = ind
+    clear
+End Sub
+
+Private Sub Command4_Click()
+    Dim tmp() As pro
+    tmp = pros
+    
+    ReDim pros(ind - 1)
+    For i = 0 To UBound(tmp)
+        If i <> Lblcindex Then
+            pros(j).cind = tmp(i).cind
+            pros(j).dp = tmp(i).dp
+            pros(j).typess = tmp(i).typess
+        End If
+    Next
+    ind = ind - 1
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+    pformat = ""
+    For i = 0 To UBound(pros)
+        pros(i).cind = i
+        pformat = IIf(pformat <> "", pformat & Chr(1), "") & pros(i).cind & Chr(2) & IIf(LCase(pros(i).typess) = "textbox", 0, IIf(LCase(pros(i).typess) = "combobox", 1, IIf(LCase(pros(i).typess) = "checkbox", 2, 3))) & Chr(2) & pros(i).dp
+    Next
+    SelectedControls(0).Format = pformat
+End Sub
+
+Private Sub PropertyPage_Initialize()
+  '  pformat = SelectedControls(0).Format
+  ReDim pros(0)
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+  '  txtcaption.text = SelectedControls(0).Caption
+'    txtCols.text = SelectedControls(0).Cols
+ '   txtRows.text = SelectedControls(0).Rows
+    pformat = ""
+    pformat = SelectedControls(0).Format
+    If pformat <> "" Then
+        
+        s = Split(pformat, Chr(1))
+        ReDim pros(UBound(s))
+        For i = 0 To UBound(s)
+            t = Split(s(i), Chr(2))
+            pros(i).cind = t(0)
+            Select Case t(1)
+            Case 0
+                tt = "TextBox"
+            Case 1
+                tt = "ComboBox"
+            Case 2
+                tt = "CheckBox"
+            Case 3
+                tt = "Button"
+            End Select
+            pros(i).typess = tt
+            pros(i).dp = t(2)
+        Next
+        m = 0
+        Lblcindex = 0
+        ind = UBound(pros)
+        cmbCelltype = pros(0).typess
+        chkDuplication.Value = pros(0).dp
+    End If
+End Sub
+
+'Public Property Get q() As p
+    
+'End Property
+
+'Public Property Let q(ByRef vNewValue() As p)
+ '   PropertyChanged "q"
+'End Property
+
+Public Sub clear()
+    cmbCelltype.text = "TextBox"
+    chkDuplication.Value = 0
+    
+End Sub
